@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-     "dev":"nodemon src/app.js"
+    "dev": "nodemon src/app.js"
   },
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
     "express": "^5.2.1",
-    "mongodb": "^7.4.0"
+    "mongodb": "^7.4.0",
+    "mongoose": "^9.7.3"
   }
 }
