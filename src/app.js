@@ -46,7 +46,7 @@ app.get("/feed", async (req, res) => {
 
 app.post("/deleteUser", async (req, res) => {
   try {
-    const users=await findOneAndDelete({_id: req.body.id})
+    const users=await User.findOneAndDelete({_id: req.body.id})
     res.status(200).json("User delete successfully")
   } catch (error) {
     console.log(error);
@@ -55,7 +55,7 @@ app.post("/deleteUser", async (req, res) => {
 
 app.patch("/updateUser", async(req, res)=>{
     try {
-      const user=await findByIdAndUpdate({_id: req.body.id}, req.body);
+      const user=await User.findByIdAndUpdate({_id: req.body.id}, req.body);
        res.status(201).json({
         data:{
           user
