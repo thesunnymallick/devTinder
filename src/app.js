@@ -1,17 +1,57 @@
 const express = require("express");
+const bcrypt = require("bcrypt");
 const connectDB = require("./config/db");
 const User = require("./model/user");
+const { singupValidation } = require("./utils/validation");
 const app = express();
 
 app.use(express.json());
 
 app.post("/singup", async (req, res) => {
   try {
-    const newUser = new User(req.body);
+    singupValidation(req);
+    const { firstName, lastName, emailId, password } = req.body;
+    const hashPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      firstName,
+      lastName,
+      emailId,
+      password: hashPassword,
+    });
     await newUser.save();
     res.status(200).send("User create sucessfully");
   } catch (error) {
-    res.status(500).send("Something went wrong");
+    res.status(500).json({
+      message: "opps! something went wrong",
+      error: error.message,
+    });
+  }
+});
+
+app.post("/login", async (req, res) => {
+  try {
+    const { emailId, password } = req.body;
+
+    if (!emailId | !password) {
+      throw new Error("Email id and password is required");
+    }
+    const user = await User.findOne({ emailId: emailId });
+    if (!user) {
+      throw new Error("Invaild credentials");
+    }
+    const isMatchPassword = await bcrypt.compare(password, user.password);
+
+    if (!isMatchPassword) {
+      throw new Error("Invaild credentials");
+    }
+    res.status(200).json({
+      message: "login successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
+      error: error.message,
+      message: "something went wrong",
+    });
   }
 });
 
@@ -46,27 +86,43 @@ app.get("/feed", async (req, res) => {
 
 app.post("/deleteUser", async (req, res) => {
   try {
-    const users=await User.findOneAndDelete({_id: req.body.id})
-    res.status(200).json("User delete successfully")
+    const users = await User.findOneAndDelete({ _id: req.body.id });
+    res.status(200).json("User delete successfully");
   } catch (error) {
     console.log(error);
   }
 });
 
-app.patch("/updateUser", async(req, res)=>{
-    try {
-      const user=await User.findByIdAndUpdate({_id: req.body.id}, req.body);
-       res.status(201).json({
-        data:{
-          user
-        }, 
-        message:"user update successfully"
-       })
-    } catch (error) {
-        console.log(error)
+app.patch("/updateUser/:id", async (req, res) => {
+  try {
+    const allowedFiled = [
+      "firstName",
+      "lastName",
+      "age",
+      "photoUrl",
+      "gender",
+      "skils",
+      "bio",
+    ];
+    const isAllowed = Object.keys(req.body).every((e) =>
+      allowedFiled.includes(e)
+    );
+    if (!isAllowed) {
+      throw new Error("upadate failed");
     }
-})
 
+    await User.findByIdAndUpdate({ _id: req.params.id }, req.body, {
+      runValidators: true,
+    });
+    res.status(201).json({
+      message: "user update successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
+      message: `update failed : ${error.message}`,
+    });
+  }
+});
 
 connectDB()
   .then(() => {
