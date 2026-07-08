@@ -1,11 +1,16 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
+const cookieParser=require("cookie-parser")
+const jwt=require("jsonwebtoken")
 const connectDB = require("./config/db");
 const User = require("./model/user");
 const { singupValidation } = require("./utils/validation");
+const { userAuth } = require("./middleware/auth");
 const app = express();
 
 app.use(express.json());
+app.use(cookieParser())
+
 
 app.post("/singup", async (req, res) => {
   try {
@@ -44,6 +49,9 @@ app.post("/login", async (req, res) => {
     if (!isMatchPassword) {
       throw new Error("Invaild credentials");
     }
+    // Jwt token genarte
+    const token =jwt.sign({id:user._id}, "DevTinder@#2000")
+    res.cookie("token", token)
     res.status(200).json({
       message: "login successfully",
     });
@@ -55,9 +63,12 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/profile/:id", async (req, res) => {
+app.get("/profile",userAuth, async (req, res) => {
   try {
-    const user = await User.findOne({ _id: req.params.id });
+    const user=req.user;
+    if(!user){
+      throw new Error ("User not found");
+    }
     res.status(200).json({
       data: {
         user,
@@ -65,7 +76,7 @@ app.get("/profile/:id", async (req, res) => {
       },
     });
   } catch (error) {
-    res.status(500).send("Something went wrong");
+    res.status(500).send("Error : "+ error.message);
   }
 });
 
