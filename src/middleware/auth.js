@@ -20,7 +20,13 @@ const userAuth=async(req, res, next)=>{
         next();
     } catch (error) {
         res.status(400).json({
-            error :error.message
+          data:{
+            code:400,
+            success:false,
+            message:"something went wrong",
+            error:error.message
+          }
+            
         })
     }
 }
