@@ -58,40 +58,74 @@ const loginController = async (req, res) => {
     });
   } catch (error) {
     res.status(400).json({
-       data:{
-         success:false,
-         code:400,
-         error: error.message,
-         message: "something went wrong",
-
-       }
+      data: {
+        success: false,
+        code: 400,
+        error: error.message,
+        message: "something went wrong",
+      },
     });
   }
 };
 
+const logoutController = async (req, res) => {
+  try {
+    res.clearCookie("token", {});
+    res.status(200).json({
+      success: true,
+      code: 200,
+      message: "logout successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
+      data: {
+        code: 400,
+        success: false,
+        error: error.message,
+        message: "something went wrong",
+      },
+    });
+  }
+};
 
-const logoutController=async(req, res)=>{
-    try {
-      res.clearCookie("token", {});
-     res.status(200).json({
-        success:true,
-        code:200,
-        message:"logout successfully"
-     })
-    } catch (error) {
-        res.status(400).json({
-            data:{
-                code:400,
-                success:false,
-                error:error.message,
-                message:"something went wrong"
-            }
-        })
+const forgotPasswordController = async (req, res) => {
+  try {
+    const newPassword = req.body.password;
+    const userId = req.user._id;
+    if (!userId) {
+      throw new Error("user not found");
     }
-}
+    const hashPassword = await bcrypt.hash(newPassword, 10);
+
+    await User.findByIdAndUpdate(
+      userId,
+      {
+        password: hashPassword,
+      },
+      { runValidators: true }
+    );
+    res.status(200).json({
+      data: {
+        success: true,
+        code: 200,
+        message: "new password update successfully",
+      },
+    });
+  } catch (error) {
+    res.status(400).json({
+      data: {
+        success: false,
+        code: 400,
+        error: error.message,
+        message: "something went wrong",
+      },
+    });
+  }
+};
 
 module.exports = {
   singupController,
   loginController,
-  logoutController
+  logoutController,
+  forgotPasswordController,
 };

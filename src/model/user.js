@@ -46,7 +46,7 @@ const userSchema = new mongoose.Schema(
         message: `{VALUE} is not valid gender. please choose MALE, FEMALE, or OTHER`,
       },
     },
-    skils: {
+    skills: {
       type: [String],
     },
     bio: {
