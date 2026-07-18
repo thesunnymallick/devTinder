@@ -3,7 +3,7 @@ const { singupController, loginController, logoutController, forgotPasswordContr
 const { userAuth } = require("../middleware/auth");
 const authRouter = express.Router();
 
-authRouter.post("/singup", singupController);
+authRouter.post("/signup", singupController);
 authRouter.post("/login",  loginController);
 authRouter.post("/logout", userAuth, logoutController);
 authRouter.patch("/forgotPassword", userAuth, forgotPasswordController)
